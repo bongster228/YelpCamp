@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+
+<h1>This is the campgrounds page</h1>
+
+<ul>
+  <% campgrounds.map(campground =>{ %>
+  <li>
+    <h4>Camp Name: <%= campground.name %></h4>
+    <img width="500" src="<%= campground.image%>" alt="" />
+  </li>
+  <% }) %>
+</ul>
+
+<%- include('partials/footer') %>
