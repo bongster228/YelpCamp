@@ -1,14 +1,29 @@
 <%- include('partials/header') %>
 
-<h1>This is the campgrounds page</h1>
+<div class="container">
+  <header class="jumbotron">
+    <h1>Welcome To YelpCamp!</h1>
+    <p>View our hand-picked campground from all over the world</p>
+    <p>
+      <a class="btn btn-primary btn-large" href="/campgrounds/new"
+        >Add a Campground</a
+      >
+    </p>
+  </header>
 
-<ul>
-  <% campgrounds.map(campground =>{ %>
-  <li>
-    <h4>Camp Name: <%= campground.name %></h4>
-    <img width="500" src="<%= campground.image%>" alt="" />
-  </li>
-  <% }) %>
-</ul>
+  <div class="row text-center" style="display:flex; flex-wrap:wrap;">
+    <% campgrounds.map(campground =>{ %>
 
+    <div class="col-md-3 col-sm-6">
+      <div class="thumbnail">
+        <img src="<%= campground.image%>" alt="" />
+        <div class="caption">
+          <h4>Camp Name: <%= campground.name %></h4>
+        </div>
+      </div>
+    </div>
+
+    <% }) %>
+  </div>
+</div>
 <%- include('partials/footer') %>
