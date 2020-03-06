@@ -1,5 +1,11 @@
+/* eslint-disable no-console */
+/* eslint linebreak-style: ["error", "windows"] */
 /* eslint-disable comma-dangle */
 const express = require('express');
+const mongoose = require('mongoose');
+
+mongoose.set('useUnifiedTopology', true);
+mongoose.connect('mongodb://localhost/yelp_camp', { useNewUrlParser: true });
 
 const PORT = 3000;
 
@@ -9,38 +15,13 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 
-const campgrounds = [
-  {
-    name: 'Salmon Creek',
-    image:
-      'https://images.unsplash.com/photo-1510312305653-8ed496efae75?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1267&q=80'
-  },
-  {
-    name: 'Granite Hill',
-    image:
-      'https://images.unsplash.com/photo-1508873696983-2dfd5898f08b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80'
-  },
-  {
-    name: 'Mountain Goat Rest',
-    image:
-      'https://images.unsplash.com/photo-1563299796-17596ed6b017?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80'
-  },
-  {
-    name: 'Salmon Creek',
-    image:
-      'https://images.unsplash.com/photo-1510312305653-8ed496efae75?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1267&q=80'
-  },
-  {
-    name: 'Granite Hill',
-    image:
-      'https://images.unsplash.com/photo-1508873696983-2dfd5898f08b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80'
-  },
-  {
-    name: 'Mountain Goat Rest',
-    image:
-      'https://images.unsplash.com/photo-1563299796-17596ed6b017?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80'
-  }
-];
+// SCHEMA SETUP
+const campgroundSchema = new mongoose.Schema({
+  name: String,
+  image: String
+});
+
+const Campground = mongoose.model('Campground', campgroundSchema);
 
 //---------------------------------------------------------------------------------------------
 // Routes
@@ -49,7 +30,15 @@ app.get('/', (req, res) => {
 });
 
 app.get('/campgrounds', (req, res) => {
-  res.render('campgrounds', { campgrounds });
+  // Get all campgrounds from the DB
+  Campground.find({}, (err, allCampgrounds) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render('campgrounds', { campgrounds: allCampgrounds });
+    }
+  });
+  // res.render('campgrounds', { campgrounds });
 });
 
 app.post('/campgrounds', (req, res) => {
@@ -57,8 +46,14 @@ app.post('/campgrounds', (req, res) => {
   // Redirect back to campgrounds page
   const { name, image } = req.body;
   const newCampground = { name, image };
-  campgrounds.push(newCampground);
-  res.redirect('/campgrounds');
+  // Insert new campgrounds to DB
+  Campground.create(newCampground, (err, newlyCreated) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.redirect('/campgrounds');
+    }
+  });
 });
 
 // Show the form that will send the data and make post request
