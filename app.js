@@ -18,10 +18,27 @@ app.set('view engine', 'ejs');
 // SCHEMA SETUP
 const campgroundSchema = new mongoose.Schema({
   name: String,
-  image: String
+  image: String,
+  description: String
 });
 
 const Campground = mongoose.model('Campground', campgroundSchema);
+
+// Campground.create(
+//   {
+//     name: 'Granite Hill',
+//     image:
+//       'https://images.unsplash.com/photo-1576949223184-431f5c6eb29b?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1050&q=80',
+//     description: 'Awesome place to camp'
+//   },
+//   (err, campground) => {
+//     if (err) {
+//       console.log(err);
+//     } else {
+//       console.log(campground);
+//     }
+//   }
+// );
 
 //---------------------------------------------------------------------------------------------
 // Routes
@@ -36,7 +53,7 @@ app.get('/campgrounds', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      res.render('campgrounds', { campgrounds: allCampgrounds });
+      res.render('index', { campgrounds: allCampgrounds });
     }
   });
   // res.render('campgrounds', { campgrounds });
@@ -46,8 +63,8 @@ app.get('/campgrounds', (req, res) => {
 app.post('/campgrounds', (req, res) => {
   // Get data from form and add to campgrounds array
   // Redirect back to campgrounds page
-  const { name, image } = req.body;
-  const newCampground = { name, image };
+  const { name, image, description } = req.body;
+  const newCampground = { name, image, description };
   // Insert new campgrounds to DB
   Campground.create(newCampground, (err, newlyCreated) => {
     if (err) {
@@ -62,6 +79,18 @@ app.post('/campgrounds', (req, res) => {
 // Show the form that will send the data and make post request
 app.get('/campgrounds/new', (req, res) => {
   res.render('new.ejs');
+});
+
+// SHOW Route
+app.get('/campgrounds/:id', (req, res) => {
+  // Find the campground with provided id from req
+  Campground.findById(req.params.id, (err, foundCampground) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render('show', { campground: foundCampground });
+    }
+  });
 });
 //---------------------------------------------------------------------------------------------
 
