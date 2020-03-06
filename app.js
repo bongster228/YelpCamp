@@ -29,6 +29,7 @@ app.get('/', (req, res) => {
   res.render('landing');
 });
 
+// INDEX Route
 app.get('/campgrounds', (req, res) => {
   // Get all campgrounds from the DB
   Campground.find({}, (err, allCampgrounds) => {
@@ -41,6 +42,7 @@ app.get('/campgrounds', (req, res) => {
   // res.render('campgrounds', { campgrounds });
 });
 
+// CREATE Route
 app.post('/campgrounds', (req, res) => {
   // Get data from form and add to campgrounds array
   // Redirect back to campgrounds page
@@ -56,6 +58,7 @@ app.post('/campgrounds', (req, res) => {
   });
 });
 
+// NEW Route
 // Show the form that will send the data and make post request
 app.get('/campgrounds/new', (req, res) => {
   res.render('new.ejs');
