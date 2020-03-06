@@ -1,15 +1,18 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-mongoose.set("useUnifiedTopology", true);
-mongoose.connect("mongodb://localhost/dog_app", { useNewUrlParser: true });
+// Create or access the database
+mongoose.set('useUnifiedTopology', true);
+mongoose.connect('mongodb://localhost/dog_app', { useNewUrlParser: true });
 
+// Structure of the data
 const dogSchema = new mongoose.Schema({
   name: String,
   age: Number,
-  breed: String
+  breed: String,
 });
 
-const Dog = mongoose.model("Dog", dogSchema);
+// Take the schema and compile to a model
+const Dog = mongoose.model('Dog', dogSchema);
 
 // // Adding a new dog to the DB
 // const mango = new Dog({
@@ -29,9 +32,9 @@ const Dog = mongoose.model("Dog", dogSchema);
 
 Dog.create(
   {
-    name: "Snow White",
-    age: 15,
-    breed: "Border Collie"
+    name: 'Pheonix',
+    age: 2,
+    breed: 'Corgi',
   },
   (err, dog) => {
     if (err) {
@@ -39,17 +42,17 @@ Dog.create(
     } else {
       console.log(dog);
     }
-  }
+  },
 );
 
 // Retrieve all dogs from the DB and console.log
 
 Dog.find({}, (err, dogs) => {
   if (err) {
-    console.log("Error!");
-    console.log(error);
+    console.log('Error!');
+    console.log(err);
   } else {
-    console.log("All the dogs");
+    console.log('All the dogs');
     console.log(dogs);
   }
 });
