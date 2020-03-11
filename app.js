@@ -21,7 +21,7 @@ app.set('view engine', 'ejs');
 
 SeedDB();
 //---------------------------------------------------------------------------------------------
-// Routes
+// Campground Routes
 app.get('/', (req, res) => {
   res.render('landing');
 });
@@ -33,7 +33,7 @@ app.get('/campgrounds', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      res.render('index', { campgrounds: allCampgrounds });
+      res.render('campgrounds/index', { campgrounds: allCampgrounds });
     }
   });
   // res.render('campgrounds', { campgrounds });
@@ -58,7 +58,7 @@ app.post('/campgrounds', (req, res) => {
 // NEW Route
 // Show the form that will send the data and make post request
 app.get('/campgrounds/new', (req, res) => {
-  res.render('new.ejs');
+  res.render('campgrounds/new');
 });
 
 // SHOW Route
@@ -68,12 +68,43 @@ app.get('/campgrounds/:id', (req, res) => {
     if (err) {
       console.log(err);
     } else {
-      res.render('show', { campground: foundCampground });
+      res.render('campgrounds/show', { campground: foundCampground });
     }
   });
 });
 //---------------------------------------------------------------------------------------------
+// Comments Routes
 
+app.get('/campgrounds/:id/comments/new', (req, res) => {
+  // Find campground by id
+  const { id } = req.params;
+  Campground.findById(id, (err, foundCampground) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.render('comments/new', { campground: foundCampground });
+    }
+  });
+});
+
+app.post('/campgrounds/:id/comments', async (req, res) => {
+  // Look up campground using id
+  const { id } = req.params;
+  const campground = await Campground.findById(id);
+
+  // Create new comment
+  const { comment } = req.body;
+  const newComment = await Comment.create(comment);
+
+  // Connect new comment to campground
+  campground.comments.push(newComment);
+  campground.save();
+
+  // Redirect to campground show page
+  res.redirect(`/campgrounds/${id}`);
+});
+
+//---------------------------------------------------------------------------------------------
 app.listen(PORT, () => {
   console.log('YelpCamp server has started');
 });

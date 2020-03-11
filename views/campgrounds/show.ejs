@@ -1,14 +1,21 @@
-<%- include('partials/header') %>
+<%- include('../partials/header') %>
 
 <div class="thumbnail">
   <img src="<%=campground.image%>" alt="" />
   <div class="caption">
     <h2><%=campground.name%></h2>
     <p><%=campground.description%></p>
+    <p>
+      <a
+        class="btn btn-success"
+        href="/campgrounds/<%= campground._id %>/comments/new"
+        >Add New Comment</a
+      >
+    </p>
   </div>
   <% campground.comments.map(comment => { %>
   <p><%= comment.text %> -- <strong><%= comment.author %></strong></p>
   <% }) %>
 </div>
 
-<%-include('partials/footer') %>
+<%-include('../partials/footer') %>
