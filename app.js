@@ -3,6 +3,11 @@
 /* eslint-disable comma-dangle */
 const express = require('express');
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const Campground = require('./models/campground');
+const Comment = require('./models/comment');
+const User = require('./models/user');
+const SeedDB = require('./seeds');
 
 mongoose.set('useUnifiedTopology', true);
 mongoose.connect('mongodb://localhost/yelp_camp', { useNewUrlParser: true });
@@ -10,20 +15,11 @@ mongoose.connect('mongodb://localhost/yelp_camp', { useNewUrlParser: true });
 const PORT = 3000;
 
 const app = express();
-const bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 
-// SCHEMA SETUP
-const campgroundSchema = new mongoose.Schema({
-  name: String,
-  image: String,
-  description: String
-});
-
-const Campground = mongoose.model('Campground', campgroundSchema);
-
+SeedDB();
 //---------------------------------------------------------------------------------------------
 // Routes
 app.get('/', (req, res) => {
@@ -68,7 +64,7 @@ app.get('/campgrounds/new', (req, res) => {
 // SHOW Route
 app.get('/campgrounds/:id', (req, res) => {
   // Find the campground with provided id from req
-  Campground.findById(req.params.id, (err, foundCampground) => {
+  Campground.findById(req.params.id).populate('comments').exec((err, foundCampground) => {
     if (err) {
       console.log(err);
     } else {

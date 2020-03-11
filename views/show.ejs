@@ -6,6 +6,9 @@
     <h2><%=campground.name%></h2>
     <p><%=campground.description%></p>
   </div>
+  <% campground.comments.map(comment => { %>
+  <p><%= comment.text %> -- <strong><%= comment.author %></strong></p>
+  <% }) %>
 </div>
 
 <%-include('partials/footer') %>
