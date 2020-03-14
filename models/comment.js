@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 mongoose.set('useUnifiedTopology', true);
-mongoose.connect('mongodb://localhost/yelp_camp', { userNewUrlParser: true });
+mongoose.connect('mongodb://localhost/yelp_camp', { useNewUrlParser: true });
 
 const commentSchema = new mongoose.Schema({
   text: String,
