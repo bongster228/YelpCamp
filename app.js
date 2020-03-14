@@ -3,6 +3,8 @@
 /* eslint-disable comma-dangle */
 const express = require('express');
 const mongoose = require('mongoose');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
 const bodyParser = require('body-parser');
 const Campground = require('./models/campground');
 const Comment = require('./models/comment');
@@ -21,6 +23,37 @@ app.set('view engine', 'ejs');
 app.use(express.static(`${__dirname}/public`));
 
 SeedDB();
+
+//---------------------------------------------------------------------------------------------
+// PASSPORT CONFIG
+app.use(require('express-session')({
+  secret: 'COVID-19',
+  resave: false,
+  saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// middleware
+const isLoggedIn = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  res.redirect('/login');
+};
+
+// allows variables or objects to be available in
+// the rendering engine (ejs)
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  next();
+});
+
 //---------------------------------------------------------------------------------------------
 // Campground Routes
 app.get('/', (req, res) => {
@@ -76,7 +109,7 @@ app.get('/campgrounds/:id', (req, res) => {
 //---------------------------------------------------------------------------------------------
 // Comments Routes
 
-app.get('/campgrounds/:id/comments/new', (req, res) => {
+app.get('/campgrounds/:id/comments/new', isLoggedIn, (req, res) => {
   // Find campground by id
   const { id } = req.params;
   Campground.findById(id, (err, foundCampground) => {
@@ -88,7 +121,7 @@ app.get('/campgrounds/:id/comments/new', (req, res) => {
   });
 });
 
-app.post('/campgrounds/:id/comments', async (req, res) => {
+app.post('/campgrounds/:id/comments', isLoggedIn, async (req, res) => {
   // Look up campground using id
   const { id } = req.params;
   const campground = await Campground.findById(id);
@@ -103,6 +136,52 @@ app.post('/campgrounds/:id/comments', async (req, res) => {
 
   // Redirect to campground show page
   res.redirect(`/campgrounds/${id}`);
+});
+
+//---------------------------------------------------------------------------------------------
+// AUTH ROUTES
+
+// show register form
+app.get('/register', (req, res) => {
+  res.render('register');
+});
+
+// handle register request
+app.post('/register', (req, res) => {
+  const { username, password } = req.body;
+
+  // Create a new user using username from the form
+  const newUser = new User({ username });
+
+  // Register new user using username and password sent from the form
+  User.register(newUser, password, (err, user) => {
+    if (err) {
+      console.log(err);
+      return res.render('/register');
+    }
+
+    // After creating the user, authenticate using 'local' strategy
+    passport.authenticate('local')(req, res, () => {
+      res.redirect('/campgrounds');
+    });
+  });
+});
+
+// show login form
+app.get('/login', (req, res) => {
+  res.render('login');
+});
+
+// handle login request
+app.post('/login', passport.authenticate('local', {
+  successRedirect: '/campgrounds',
+  failureRedirect: '/login'
+}), (req, res) => {});
+
+// add logout route
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/campgrounds');
 });
 
 //---------------------------------------------------------------------------------------------
