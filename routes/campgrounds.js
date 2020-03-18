@@ -3,6 +3,20 @@ const express = require('express');
 const router = express.Router();
 const Campground = require('../models/campground');
 
+//--------------------------------------------------------------------------------------
+// Middleware
+
+// Used to check if the user is logged in
+const isLoggedIn = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  res.redirect('/login');
+};
+//--------------------------------------------------------------------------------------
+
+
 // Campground Index Route
 router.get('/', (req, res) => {
   // Get all campgrounds from the DB
@@ -17,13 +31,21 @@ router.get('/', (req, res) => {
 });
 
 // CREATE Route
-router.post('/', (req, res) => {
+router.post('/', isLoggedIn, async (req, res) => {
   // Get data from form and add to campgrounds array
-  // Redirect back to campgrounds page
   const { name, image, description } = req.body;
-  const newCampground = { name, image, description };
+
+  // Get information about the user that created the campground
+  const { _id, username } = req.user;
+  const author = { id: _id, username };
+
+  // Includes all the info needed to create a new campground
+  const newCampground = {
+    name, image, description, author,
+  };
+
   // Insert new campgrounds to DB
-  Campground.create(newCampground, (err, newlyCreated) => {
+  const campground = await Campground.create(newCampground, (err, newlyCreated) => {
     if (err) {
       console.log(err);
     } else {
@@ -34,7 +56,7 @@ router.post('/', (req, res) => {
 
 // NEW Route
 // Show the form that will send the data and make post request
-router.get('/new', (req, res) => {
+router.get('/new', isLoggedIn, (req, res) => {
   res.render('campgrounds/new');
 });
 

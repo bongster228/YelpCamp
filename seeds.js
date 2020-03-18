@@ -33,23 +33,23 @@ const seedDB = async () => {
   console.log('Comments removed');
 
   // eslint-disable-next-line no-restricted-syntax
-  for (const seed of seeds) {
-    const campground = await Campground.create(seed);
+  // for (const seed of seeds) {
+  //   const campground = await Campground.create(seed);
 
-    console.log('Campground created');
-    const comment = await Comment.create(
-      {
-        text: 'This place is great, but I wish there was internet',
-        author: 'Homer',
-      },
-    );
+  //   console.log('Campground created');
+  //   const comment = await Comment.create(
+  //     {
+  //       text: 'This place is great, but I wish there was internet',
+  //       author: 'Homer',
+  //     },
+  //   );
 
-    console.log('Comment created');
-    campground.comments.push(comment);
-    campground.save();
+  //   console.log('Comment created');
+  //   campground.comments.push(comment);
+  //   campground.save();
 
-    console.log('Comment added to campground');
-  }
+  //   console.log('Comment added to campground');
+  // }
 };
 
 module.exports = seedDB;

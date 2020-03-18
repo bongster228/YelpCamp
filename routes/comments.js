@@ -4,7 +4,10 @@ const Comment = require('../models/comment');
 
 const router = express.Router({ mergeParams: true });
 
+//--------------------------------------------------------------------------------------
 // Middleware
+
+// Used to check if the user is logged in
 const isLoggedIn = (req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
@@ -12,6 +15,7 @@ const isLoggedIn = (req, res, next) => {
 
   res.redirect('/login');
 };
+//--------------------------------------------------------------------------------------
 
 // Commments New
 router.get('/new', isLoggedIn, (req, res) => {
@@ -36,6 +40,13 @@ router.post('/', isLoggedIn, async (req, res) => {
   // Create new comment
   const { comment } = req.body;
   const newComment = await Comment.create(comment);
+
+  // Add username and id to comment
+  // isLoggedIn middleware ensuers that user is logged in
+  const { _id, username } = req.user;
+  newComment.author.id = _id;
+  newComment.author.username = username;
+  newComment.save();
 
   // Connect new comment to campground
   campground.comments.push(newComment);
