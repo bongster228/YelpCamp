@@ -1,3 +1,4 @@
+/* eslint-disable no-lonely-if */
 /* eslint-disable camelcase */
 const express = require('express');
 const Campground = require('../models/campground');
@@ -18,7 +19,28 @@ const isLoggedIn = (req, res, next) => {
 };
 
 // Check ownership of the comments
+const checkCommentOwnership = (req, res, next) => {
+  const { comment_id } = req.params;
 
+  // Make sure user is authenticated
+  if (req.isAuthenticated()) {
+    Comment.findById(comment_id, (err, foundComment) => {
+      if (err) {
+        res.redirect('back');
+      } else {
+        // Does the found user match the authenticated user?
+        if (foundComment.author.id.equals(req.user._id)) {
+          next();
+        } else {
+          res.redirect('back');
+        }
+      }
+    });
+  } else {
+    // User is not authenticated
+    res.redirect('back');
+  }
+};
 
 //--------------------------------------------------------------------------------------
 
@@ -62,7 +84,7 @@ router.post('/', isLoggedIn, async (req, res) => {
 });
 
 // Edit Route
-router.get('/:comment_id/edit', (req, res) => {
+router.get('/:comment_id/edit', checkCommentOwnership, (req, res) => {
   // Get the campground's id from request
   const { id: campground_id } = req.params;
 
@@ -78,7 +100,7 @@ router.get('/:comment_id/edit', (req, res) => {
 });
 
 // Update Route
-router.put('/:comment_id', (req, res) => {
+router.put('/:comment_id', checkCommentOwnership, (req, res) => {
   // Get the id and the updated contents of the comment
   const { comment_id, id: campground_id } = req.params;
   const { comment } = req.body;
@@ -94,7 +116,7 @@ router.put('/:comment_id', (req, res) => {
 });
 
 // Destroy Route
-router.delete('/:comment_id', (req, res) => {
+router.delete('/:comment_id', checkCommentOwnership, (req, res) => {
   const { comment_id, id: campground_id } = req.params;
 
   Comment.findByIdAndRemove(comment_id, (err) => {
