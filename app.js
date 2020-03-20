@@ -6,7 +6,9 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const bodyParser = require('body-parser');
+const methodOverride = require('method-override');
 const User = require('./models/user');
+
 const SeedDB = require('./seeds');
 
 // Route files
@@ -14,8 +16,8 @@ const commentRoutes = require('./routes/comments');
 const campgroundRoutes = require('./routes/campgrounds');
 const indexRoutes = require('./routes/index');
 
-
 mongoose.set('useUnifiedTopology', true);
+mongoose.set('useFindAndModify', false);
 mongoose.connect('mongodb://localhost/yelp_camp', { useNewUrlParser: true });
 
 const PORT = 3000;
@@ -25,17 +27,20 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
 app.use(express.static(`${__dirname}/public`));
+app.use(methodOverride('_method'));
 
 // Seed database
-// SeedDB();
+SeedDB();
 
 //---------------------------------------------------------------------------------------------
 // PASSPORT CONFIG
-app.use(require('express-session')({
-  secret: 'COVID-19',
-  resave: false,
-  saveUninitialized: false
-}));
+app.use(
+  require('express-session')({
+    secret: 'COVID-19',
+    resave: false,
+    saveUninitialized: false
+  })
+);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -53,7 +58,6 @@ app.use((req, res, next) => {
 app.use('/', indexRoutes);
 app.use('/campgrounds/:id/comments', commentRoutes);
 app.use('/campgrounds', campgroundRoutes);
-
 
 //---------------------------------------------------------------------------------------------
 app.listen(PORT, () => {

@@ -1,3 +1,5 @@
+/* eslint-disable no-lonely-if */
+/* eslint-disable comma-dangle */
 const express = require('express');
 
 const router = express.Router();
@@ -14,8 +16,31 @@ const isLoggedIn = (req, res, next) => {
 
   res.redirect('/login');
 };
-//--------------------------------------------------------------------------------------
 
+// Used to authenticate the users
+const checkCampgroundOwnership = (req, res, next) => {
+  const { id } = req.params;
+
+  if (req.isAuthenticated()) {
+    Campground.findById(id, (err, foundCampground) => {
+      if (err) {
+        res.redirect('/campgrounds');
+      } else {
+        // Does user own campground?
+        if (foundCampground.author.id.equals(req.user._id)) {
+          next();
+        } else {
+          res.redirect('back');
+        }
+      }
+    });
+  } else {
+    // Take the user back
+    res.redirect('back');
+  }
+};
+
+//--------------------------------------------------------------------------------------
 
 // Campground Index Route
 router.get('/', (req, res) => {
@@ -41,17 +66,23 @@ router.post('/', isLoggedIn, async (req, res) => {
 
   // Includes all the info needed to create a new campground
   const newCampground = {
-    name, image, description, author,
+    name,
+    image,
+    description,
+    author
   };
 
   // Insert new campgrounds to DB
-  const campground = await Campground.create(newCampground, (err, newlyCreated) => {
-    if (err) {
-      console.log(err);
-    } else {
-      res.redirect('/campgrounds');
+  const campground = await Campground.create(
+    newCampground,
+    (err, newlyCreated) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.redirect('/campgrounds');
+      }
     }
-  });
+  );
 });
 
 // NEW Route
@@ -63,14 +94,52 @@ router.get('/new', isLoggedIn, (req, res) => {
 // SHOW Route
 router.get('/:id', (req, res) => {
   // Find the campground with provided id from req
-  Campground.findById(req.params.id).populate('comments').exec((err, foundCampground) => {
+  Campground.findById(req.params.id)
+    .populate('comments')
+    .exec((err, foundCampground) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.render('campgrounds/show', { campground: foundCampground });
+      }
+    });
+});
+
+// EDIT Route
+router.get('/:id/edit', checkCampgroundOwnership, (req, res) => {
+  const { id } = req.params;
+  Campground.findById(id, (err, foundCampground) => {
+    res.render('campgrounds/edit', { campground: foundCampground });
+  });
+});
+
+// UPDATE Route
+router.put('/:id', checkCampgroundOwnership, (req, res) => {
+  // Find and update the correct campground
+  const { id } = req.params;
+  const { campground } = req.body;
+
+  Campground.findByIdAndUpdate(id, campground, (err, updatedCampground) => {
     if (err) {
-      console.log(err);
+      res.redirect('/campgrounds');
     } else {
-      res.render('campgrounds/show', { campground: foundCampground });
+      // Redirect to updated page
+      res.redirect(`/campgrounds/${id}`);
     }
   });
 });
 
+// DELETE Route
+router.delete('/:id', checkCampgroundOwnership, (req, res) => {
+  const { id } = req.params;
+
+  Campground.findByIdAndRemove(id, err => {
+    if (err) {
+      res.redirect('/campground');
+    } else {
+      res.redirect('/campgrounds');
+    }
+  });
+});
 
 module.exports = router;
