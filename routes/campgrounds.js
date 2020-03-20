@@ -4,41 +4,7 @@ const express = require('express');
 
 const router = express.Router();
 const Campground = require('../models/campground');
-
-//--------------------------------------------------------------------------------------
-// Middleware
-
-// Used to check if the user is logged in
-const isLoggedIn = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-
-  res.redirect('/login');
-};
-
-// Used to authenticate the users
-const checkCampgroundOwnership = (req, res, next) => {
-  const { id } = req.params;
-
-  if (req.isAuthenticated()) {
-    Campground.findById(id, (err, foundCampground) => {
-      if (err) {
-        res.redirect('/campgrounds');
-      } else {
-        // Does user own campground?
-        if (foundCampground.author.id.equals(req.user._id)) {
-          next();
-        } else {
-          res.redirect('back');
-        }
-      }
-    });
-  } else {
-    // Take the user back
-    res.redirect('back');
-  }
-};
+const { isLoggedIn, checkCampgroundOwnership } = require('../middleware');
 
 //--------------------------------------------------------------------------------------
 
@@ -133,7 +99,7 @@ router.put('/:id', checkCampgroundOwnership, (req, res) => {
 router.delete('/:id', checkCampgroundOwnership, (req, res) => {
   const { id } = req.params;
 
-  Campground.findByIdAndRemove(id, err => {
+  Campground.findByIdAndRemove(id, (err) => {
     if (err) {
       res.redirect('/campground');
     } else {

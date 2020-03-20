@@ -3,44 +3,10 @@
 const express = require('express');
 const Campground = require('../models/campground');
 const Comment = require('../models/comment');
+const { isLoggedIn, checkCommentOwnership } = require('../middleware');
 
 const router = express.Router({ mergeParams: true });
 
-//--------------------------------------------------------------------------------------
-// Middleware
-
-// Used to check if the user is logged in
-const isLoggedIn = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-
-  return res.redirect('/login');
-};
-
-// Check ownership of the comments
-const checkCommentOwnership = (req, res, next) => {
-  const { comment_id } = req.params;
-
-  // Make sure user is authenticated
-  if (req.isAuthenticated()) {
-    Comment.findById(comment_id, (err, foundComment) => {
-      if (err) {
-        res.redirect('back');
-      } else {
-        // Does the found user match the authenticated user?
-        if (foundComment.author.id.equals(req.user._id)) {
-          next();
-        } else {
-          res.redirect('back');
-        }
-      }
-    });
-  } else {
-    // User is not authenticated
-    res.redirect('back');
-  }
-};
 
 //--------------------------------------------------------------------------------------
 
