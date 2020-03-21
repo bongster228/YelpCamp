@@ -13,18 +13,21 @@ middlewareObject.checkCampgroundOwnership = (req, res, next) => {
   if (req.isAuthenticated()) {
     Campground.findById(id, (err, foundCampground) => {
       if (err) {
-        res.redirect('/campgrounds');
+        req.flash('error', 'Campground not found');
+        res.redirect('back');
       } else {
         // Does user own campground?
         if (foundCampground.author.id.equals(req.user._id)) {
           next();
         } else {
+          req.flash('error', 'Permission Denied');
           res.redirect('back');
         }
       }
     });
   } else {
     // Take the user back
+    req.flash('error', 'You need to be logged in');
     res.redirect('back');
   }
 };
@@ -42,11 +45,13 @@ middlewareObject.checkCommentOwnership = (req, res, next) => {
         if (foundComment.author.id.equals(req.user._id)) {
           next();
         } else {
+          req.flash('error', 'Permission Denied');
           res.redirect('back');
         }
       }
     });
   } else {
+    req.flash('error', 'Login Required');
     // User is not authenticated
     res.redirect('back');
   }
@@ -57,8 +62,9 @@ middlewareObject.isLoggedIn = (req, res, next) => {
     return next();
   }
 
+  // key of 'error' will be used to display the message
+  req.flash('error', 'Login Required');
   return res.redirect('/login');
 };
-
 
 module.exports = middlewareObject;

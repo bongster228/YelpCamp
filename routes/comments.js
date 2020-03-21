@@ -7,7 +7,6 @@ const { isLoggedIn, checkCommentOwnership } = require('../middleware');
 
 const router = express.Router({ mergeParams: true });
 
-
 //--------------------------------------------------------------------------------------
 
 // Commments New Route
@@ -45,6 +44,7 @@ router.post('/', isLoggedIn, async (req, res) => {
   campground.comments.push(newComment);
   campground.save();
 
+  req.flash('success', 'New Comment Added');
   // Redirect to campground show page
   res.redirect(`/campgrounds/${id}`);
 });
@@ -76,6 +76,7 @@ router.put('/:comment_id', checkCommentOwnership, (req, res) => {
     if (err) {
       res.redirect('back');
     } else {
+      req.flash('success', 'Comment Updated');
       res.redirect(`/campgrounds/${campground_id}`);
     }
   });
@@ -85,10 +86,11 @@ router.put('/:comment_id', checkCommentOwnership, (req, res) => {
 router.delete('/:comment_id', checkCommentOwnership, (req, res) => {
   const { comment_id, id: campground_id } = req.params;
 
-  Comment.findByIdAndRemove(comment_id, (err) => {
+  Comment.findByIdAndRemove(comment_id, err => {
     if (err) {
       res.redirect('back');
     } else {
+      req.flash('success', 'Comment Deleted');
       res.redirect(`/campgrounds/${campground_id}`);
     }
   });

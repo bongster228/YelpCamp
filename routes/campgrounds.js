@@ -24,19 +24,14 @@ router.get('/', (req, res) => {
 // CREATE Route
 router.post('/', isLoggedIn, async (req, res) => {
   // Get data from form and add to campgrounds array
-  const { name, image, description } = req.body;
+  const { campground: newCampground } = req.body;
 
   // Get information about the user that created the campground
   const { _id, username } = req.user;
   const author = { id: _id, username };
 
-  // Includes all the info needed to create a new campground
-  const newCampground = {
-    name,
-    image,
-    description,
-    author
-  };
+  // Add the author to the newly created campground
+  newCampground.author = author;
 
   // Insert new campgrounds to DB
   const campground = await Campground.create(
@@ -99,10 +94,11 @@ router.put('/:id', checkCampgroundOwnership, (req, res) => {
 router.delete('/:id', checkCampgroundOwnership, (req, res) => {
   const { id } = req.params;
 
-  Campground.findByIdAndRemove(id, (err) => {
+  Campground.findByIdAndRemove(id, err => {
     if (err) {
       res.redirect('/campground');
     } else {
+      req.flash('success', 'Campground Deleted');
       res.redirect('/campgrounds');
     }
   });

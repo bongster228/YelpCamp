@@ -5,15 +5,6 @@ const User = require('../models/user');
 
 const router = express.Router();
 
-// middleware
-const isLoggedIn = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-
-  res.redirect('/login');
-};
-
 
 // Root Route
 router.get('/', (req, res) => {
@@ -35,12 +26,13 @@ router.post('/register', (req, res) => {
   // Register new user using username and password sent from the form
   User.register(newUser, password, (err, user) => {
     if (err) {
-      console.log(err);
-      return res.render('/register');
+      req.flash('error', err.message);
+      return res.redirect('/register');
     }
 
     // After creating the user, authenticate using 'local' strategy
     passport.authenticate('local')(req, res, () => {
+      req.flash('success', `${user.username} is now registered`);
       res.redirect('/campgrounds');
     });
   });
@@ -57,9 +49,11 @@ router.post('/login', passport.authenticate('local', {
   failureRedirect: '/login',
 }), (req, res) => {});
 
+
 // Logout Route
 router.get('/logout', (req, res) => {
   req.logout();
+  req.flash('success', 'Logged you out!!');
   res.redirect('/campgrounds');
 });
 
