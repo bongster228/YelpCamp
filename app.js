@@ -19,7 +19,9 @@ const indexRoutes = require('./routes/index');
 
 mongoose.set('useUnifiedTopology', true);
 mongoose.set('useFindAndModify', false);
-mongoose.connect('mongodb://localhost/yelp_camp', { useNewUrlParser: true });
+
+// mongoose.connect('mongodb://localhost/yelp_camp', { useNewUrlParser: true, useCreateIndex: true });
+mongoose.connect('mongodb+srv://YelpCamp:niHcOM9ScrLZ7L39@mycluster-qmk1l.mongodb.net/test?retryWrites=true&w=majorityp', { useNewUrlParser: true, useCreateIndex: true });
 
 const PORT = 3000;
 
